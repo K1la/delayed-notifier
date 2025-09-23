@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>DelayedNotifier UI</title>
+    <style>
+        body { font-family: sans-serif; margin: 2rem; }
+        .notif { border: 1px solid #ccc; padding: 1rem; margin-bottom: 1rem; }
+        .notif p { margin: 0.3rem 0; }
+    </style>
+</head>
+<body>
+<h1>DelayedNotifier</h1>
+
+<h2>Создать уведомление</h2>
+<form id="create-form">
+    <label>Сообщение: <input type="text" id="message" required></label><br>
+    <label>Канал:
+        <select id="channel">
+            <option value="email">Email</option>
+            <option value="telegram">Telegram</option>
+        </select>
+    </label><br>
+    <label>Кому: <input type="text" id="to" required></label><br>
+    <label>Время (RFC3339): <input type="text" id="sendat" placeholder="2025-09-22T15:15:00+03:00" required></label><br>
+    <label>Retries: <input type="number" id="retries" value="3"></label><br>
+    <button type="submit">Создать</button>
+</form>
+
+<hr>
+
+<h2>Список уведомлений</h2>
+<div id="list"></div>
+
+<script>
+    const API_BASE = "/api/notify";
+
+    // универсальный парсер JSON (поддерживает {data: ...} и {result: ...})
+    async function parseJSON(resp) {
+        const payload = await resp.json();
+        if (payload && payload.data !== undefined) return payload.data;
+        if (payload && payload.result !== undefined) return payload.result;
+        return payload;
+    }
+
+    async function loadNotifications() {
+        const resp = await fetch(API_BASE + "/");
+        const data = await parseJSON(resp);
+        const listDiv = document.getElementById("list");
+        listDiv.innerHTML = "";
+        data.forEach(n => {
+            const div = document.createElement("div");
+            div.className = "notif";
+            div.innerHTML = `
+            <p><b>ID:</b> ${n.id}</p>
+            <p><b>Message:</b> ${n.message}</p>
+            <p><b>Channel:</b> ${n.channel}</p>
+            <p><b>To:</b> ${n.to}</p>
+            <p><b>SendAt:</b> ${n.send_at}</p>
+            <p><b>Status:</b> ${n.status}</p>
+            <button onclick="deleteNotif('${n.id}')">Удалить</button>
+        `;
+            listDiv.appendChild(div);
+        });
+    }
+
+    async function deleteNotif(id) {
+        const resp = await fetch(API_BASE + "/" + id, { method: "DELETE" });
+        await parseJSON(resp); // можно использовать для отображения ответа
+        await loadNotifications();
+    }
+
+    document.getElementById("create-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const notif = {
+            message: document.getElementById("message").value,
+            channel: document.getElementById("channel").value,
+            to: document.getElementById("to").value,
+            send_at: document.getElementById("sendat").value,
+            retries: parseInt(document.getElementById("retries").value)
+        };
+        const resp = await fetch(API_BASE + "/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(notif)
+        });
+        await parseJSON(resp);
+        e.target.reset();
+        await loadNotifications();
+    });
+
+    loadNotifications();
+</script>
+</body>
+</html>

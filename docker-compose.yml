@@ -1,0 +1,19 @@
+services:
+  app:
+    build: .
+    container_name: delayed_notifier
+    ports:
+      - "8080:8080"
+    depends_on:
+      - redis
+    environment:
+      - REDIS_ADDR=redis:6379
+    volumes:
+      - .:/app
+    command: ["./DelayedNotifier"]
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6390:6379"

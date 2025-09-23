@@ -73,14 +73,20 @@ func (h *Handler) Create(c *ginext.Context) {
 		UpdatedAt: time.Now(),
 	}
 
+	// TODO: заменить вместо in-memo на repository(db)
+	// TODO: передавать не напрямую в storage, а через service
 	h.storage.Save(notif)
+
 	zlog.Logger.Info().Msgf("notif created: %+v", notif)
 	response.Created(c.Writer, notif.ID)
 
 }
 func (h *Handler) GetByID(c *gin.Context) {
 	id := c.Param("id")
+
+	// TODO: заменить вместо in-memo на repository(db)
 	n, err := h.storage.Get(id)
+
 	if err != nil {
 		response.NotFound(c.Writer, err)
 		return
@@ -88,12 +94,16 @@ func (h *Handler) GetByID(c *gin.Context) {
 	response.OK(c.Writer, n)
 }
 func (h *Handler) GetAll(c *gin.Context) {
+	// TODO: заменить вместо in-memo на repository(db)
 	list := h.storage.GetAll()
+
 	response.OK(c.Writer, list)
 }
 
 func (h *Handler) Delete(c *gin.Context) {
 	id := c.Param("id")
+
+	// TODO: заменить вместо in-memo на repository(db)
 	err := h.storage.Delete(id)
 	if err != nil {
 		response.NotFound(c.Writer, err)

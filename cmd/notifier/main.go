@@ -6,6 +6,7 @@ import (
 	"github.com/K1la/delayed-notifier/internal/api/router"
 	"github.com/K1la/delayed-notifier/internal/api/server"
 	"github.com/K1la/delayed-notifier/internal/app"
+	"github.com/K1la/delayed-notifier/internal/config"
 	"github.com/K1la/delayed-notifier/internal/storage"
 	"github.com/go-playground/validator/v10"
 	"github.com/wb-go/wbf/zlog"
@@ -21,6 +22,8 @@ func main() {
 
 	zlog.Init()
 	zlog.Logger.Info().Msgf("Start MAIN")
+
+	cfg := config.Init()
 
 	val := validator.New()
 	stor := storage.New()

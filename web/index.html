@@ -3,93 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <title>DelayedNotifier UI</title>
-    <style>
-        body { font-family: sans-serif; margin: 2rem; }
-        .notif { border: 1px solid #ccc; padding: 1rem; margin-bottom: 1rem; }
-        .notif p { margin: 0.3rem 0; }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
-<h1>DelayedNotifier</h1>
+<div class="container">
+    <header>
+        <h1>DelayedNotifier</h1>
+        <div class="subtle">Простая панель для создания и просмотра уведомлений</div>
+    </header>
 
-<h2>Создать уведомление</h2>
-<form id="create-form">
-    <label>Сообщение: <input type="text" id="message" required></label><br>
-    <label>Канал:
-        <select id="channel">
-            <option value="email">Email</option>
-            <option value="telegram">Telegram</option>
-        </select>
-    </label><br>
-    <label>Кому: <input type="text" id="to" required></label><br>
-    <label>Время (RFC3339): <input type="text" id="sendat" placeholder="2025-09-22T15:15:00+03:00" required></label><br>
-    <label>Retries: <input type="number" id="retries" value="3"></label><br>
-    <button type="submit">Создать</button>
-</form>
+    <div class="grid">
+        <section class="panel card">
+            <h2>Создать уведомление</h2>
+            <div class="helper">Дата и время в формате RFC3339, пример: 2025-09-22T15:15:00+03:00</div>
+            <form id="create-form" class="form-row">
+                <div class="field">
+                    <label class="label" for="message">Сообщение</label>
+                    <input type="text" id="message" required placeholder="Например: Напомнить о созвоне" />
+                </div>
+                <div class="field">
+                    <label class="label" for="channel">Канал</label>
+                    <select id="channel">
+                        <option value="email">Email</option>
+                        <option value="telegram">Telegram</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label class="label" for="to">Кому</label>
+                    <input type="text" id="to" required placeholder="user@example.com или @username" />
+                </div>
+                <div class="field">
+                    <label class="label" for="sendat">Время (RFC3339)</label>
+                    <input type="text" id="sendat" required placeholder="2025-09-22T15:15:00+03:00" />
+                </div>
+                <div class="field">
+                    <label class="label" for="retries">Retries</label>
+                    <input type="number" id="retries" value="3" min="0" />
+                </div>
+                <div class="actions">
+                    <button type="submit" class="btn">Создать</button>
+                    <button type="reset" class="btn btn-outline">Очистить</button>
+                </div>
+            </form>
+        </section>
 
-<hr>
+        <section class="panel list">
+            <h2 class="card">Список уведомлений</h2>
+            <div id="list"></div>
+        </section>
+    </div>
+</div>
 
-<h2>Список уведомлений</h2>
-<div id="list"></div>
-
-<script>
-    const API_BASE = "/api/notify";
-
-    // универсальный парсер JSON (поддерживает {data: ...} и {result: ...})
-    async function parseJSON(resp) {
-        const payload = await resp.json();
-        if (payload && payload.data !== undefined) return payload.data;
-        if (payload && payload.result !== undefined) return payload.result;
-        return payload;
-    }
-
-    async function loadNotifications() {
-        const resp = await fetch(API_BASE + "/");
-        const data = await parseJSON(resp);
-        const listDiv = document.getElementById("list");
-        listDiv.innerHTML = "";
-        data.forEach(n => {
-            const div = document.createElement("div");
-            div.className = "notif";
-            div.innerHTML = `
-            <p><b>ID:</b> ${n.id}</p>
-            <p><b>Message:</b> ${n.message}</p>
-            <p><b>Channel:</b> ${n.channel}</p>
-            <p><b>To:</b> ${n.to}</p>
-            <p><b>SendAt:</b> ${n.send_at}</p>
-            <p><b>Status:</b> ${n.status}</p>
-            <button onclick="deleteNotif('${n.id}')">Удалить</button>
-        `;
-            listDiv.appendChild(div);
-        });
-    }
-
-    async function deleteNotif(id) {
-        const resp = await fetch(API_BASE + "/" + id, { method: "DELETE" });
-        await parseJSON(resp); // можно использовать для отображения ответа
-        await loadNotifications();
-    }
-
-    document.getElementById("create-form").addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const notif = {
-            message: document.getElementById("message").value,
-            channel: document.getElementById("channel").value,
-            to: document.getElementById("to").value,
-            send_at: document.getElementById("sendat").value,
-            retries: parseInt(document.getElementById("retries").value)
-        };
-        const resp = await fetch(API_BASE + "/", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(notif)
-        });
-        await parseJSON(resp);
-        e.target.reset();
-        await loadNotifications();
-    });
-
-    loadNotifications();
-</script>
+<script src="./app.js"></script>
 </body>
 </html>

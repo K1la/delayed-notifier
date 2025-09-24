@@ -22,6 +22,8 @@ func Init() *Config {
 		zlog.Logger.Panic().Err(err).Msg("could not unmarshal config file")
 	}
 
+	zlog.Logger.Info().Msgf("config: %+v", cfg)
+
 	err = godotenv.Load(".env")
 	if err != nil {
 		zlog.Logger.Panic().Err(err).Msg("could not load .env file")

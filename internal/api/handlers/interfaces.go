@@ -1,0 +1,11 @@
+package handlers
+
+import (
+	"context"
+	"github.com/K1la/delayed-notifier/internal/models"
+)
+
+type ServiceI interface {
+	GetNotifications(ctx context.Context) ([]*models.Notification, error)
+	CreateNotification(ctx context.Context, n *models.Notification) error
+}

@@ -13,10 +13,11 @@ func New(handler *handlers.Handler) *ginext.Engine {
 	e.StaticFile("/", "./web/index.html")
 	api := e.Group("/api/notify")
 	{
-		api.POST("/", handler.Create)
-		api.GET("/", handler.GetAll)
-		api.GET("/:id", handler.GetByID)
-		api.DELETE("/:id", handler.Delete)
+		api.POST("/", handler.CreateNotification)
+		api.GET("/", handler.GetAllNotifications)
+		// TODO: доделать в ручках методы
+		//api.GET("/:id", handler.GetNotificationStatusByID)
+		//api.DELETE("/:id", handler.Delete)
 	}
 
 	return e

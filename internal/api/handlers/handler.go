@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/K1la/delayed-notifier/internal/api/response"
 	"github.com/K1la/delayed-notifier/internal/models"
-	"github.com/K1la/delayed-notifier/internal/storage"
+	"github.com/K1la/delayed-notifier/internal/service"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
@@ -16,12 +16,12 @@ import (
 )
 
 type Handler struct {
-	storage   *storage.MemoryStorage
-	validator *validator.Validate
+	service *service.NotificationService
+	valid   *validator.Validate
 }
 
-func New(s *storage.MemoryStorage, v *validator.Validate) *Handler {
-	return &Handler{storage: s, validator: v}
+func New(s *service.NotificationService, v *validator.Validate) *Handler {
+	return &Handler{service: s, valid: v}
 }
 
 type CreateRequest struct {
@@ -32,7 +32,7 @@ type CreateRequest struct {
 	Channel models.Channel `json:"channel" validate:"required"`
 }
 
-func (h *Handler) Create(c *ginext.Context) {
+func (h *Handler) CreateNotification(c *ginext.Context) {
 	zlog.Logger.Info().Msgf("req: %+v", c.Request.Body)
 	var req CreateRequest
 	if err := json.NewDecoder(c.Request.Body).Decode(&req); err != nil {
@@ -41,7 +41,7 @@ func (h *Handler) Create(c *ginext.Context) {
 		return
 	}
 
-	if err := h.validator.Struct(req); err != nil {
+	if err := h.valid.Struct(req); err != nil {
 		zlog.Logger.Warn().Err(err).Msg("failed to validate request body")
 		response.Fail(c.Writer, http.StatusBadRequest, fmt.Errorf("validation error: %s", err.Error()))
 		return
@@ -61,7 +61,7 @@ func (h *Handler) Create(c *ginext.Context) {
 	}
 	parsedTime := parsedUTC.In(loc)
 
-	notif := models.Notification{
+	notif := &models.Notification{
 		ID:        uuid.New().String(),
 		Message:   req.Message,
 		Channel:   req.Channel,
@@ -73,41 +73,48 @@ func (h *Handler) Create(c *ginext.Context) {
 		UpdatedAt: time.Now(),
 	}
 
-	// TODO: заменить вместо in-memo на repository(db)
-	// TODO: передавать не напрямую в storage, а через service
-	h.storage.Save(notif)
+	err = h.service.CreateNotification(c.Request.Context(), notif)
+	if err != nil {
+		zlog.Logger.Error().Err(err).Msg("failed to create notification")
+	}
 
 	zlog.Logger.Info().Msgf("notif created: %+v", notif)
-	response.Created(c.Writer, notif.ID)
+	response.Created(c.Writer, notif)
 
 }
-func (h *Handler) GetByID(c *gin.Context) {
-	id := c.Param("id")
 
-	// TODO: заменить вместо in-memo на repository(db)
-	n, err := h.storage.Get(id)
+//	func (h *Handler) GetNotificationStatusByID(c *gin.Context) {
+//		id := c.Param("id")
+//
+//		// TODO: заменить вместо in-memo на service
+//		n, err := h.storage.Get(id)
+//
+//		if err != nil {
+//			zlog.Logger.Error().Err(err).Msg("failed to find notifications")
+//			response.NotFound(c.Writer, err)
+//			return
+//		}
+//		response.OK(c.Writer, n)
+//	}
 
+func (h *Handler) GetAllNotifications(c *gin.Context) {
+	list, err := h.service.GetNotifications(c.Request.Context())
 	if err != nil {
+		zlog.Logger.Error().Err(err).Msg("failed to find notifications")
 		response.NotFound(c.Writer, err)
 		return
 	}
-	response.OK(c.Writer, n)
-}
-func (h *Handler) GetAll(c *gin.Context) {
-	// TODO: заменить вместо in-memo на repository(db)
-	list := h.storage.GetAll()
-
 	response.OK(c.Writer, list)
 }
 
-func (h *Handler) Delete(c *gin.Context) {
-	id := c.Param("id")
-
-	// TODO: заменить вместо in-memo на repository(db)
-	err := h.storage.Delete(id)
-	if err != nil {
-		response.NotFound(c.Writer, err)
-		return
-	}
-	response.OK(c.Writer, "canceled")
-}
+//func (h *Handler) Delete(c *gin.Context) {
+//	id := c.Param("id")
+//
+//	// TODO: заменить вместо in-memo на service
+//	err := h.storage.Delete(id)
+//	if err != nil {
+//		response.NotFound(c.Writer, err)
+//		return
+//	}
+//	response.OK(c.Writer, "canceled")
+//}

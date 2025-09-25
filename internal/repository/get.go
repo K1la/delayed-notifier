@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+
 	"github.com/K1la/delayed-notifier/internal/models"
 )
 
@@ -34,7 +35,7 @@ func (r *Repository) GetNotificationStatusById(ctx context.Context, id string) (
 
 func (r *Repository) GetNotifications(ctx context.Context) ([]models.Notification, error) {
 	query := `
-		SELECT id, message, send_at, retries, "to", channel, status
+		SELECT id, message, send_at, retries, "to", channel, status, created_at, updated_at
 		FROM notifications
 		ORDER BY send_at DESC;
     `
@@ -48,7 +49,18 @@ func (r *Repository) GetNotifications(ctx context.Context) ([]models.Notificatio
 	var notifications []models.Notification
 	for rows.Next() {
 		var n models.Notification
-		if err = rows.Scan(&n.ID, &n.Message, &n.SendAt, &n.Retries, &n.Channel, &n.Status); err != nil {
+		err = rows.Scan(
+			&n.ID,
+			&n.Message,
+			&n.SendAt,
+			&n.Retries,
+			&n.To,
+			&n.Channel,
+			&n.Status,
+			&n.CreatedAt,
+			&n.UpdatedAt,
+		)
+		if err != nil {
 			return nil, fmt.Errorf("failed to scan row to model: %w", err)
 		}
 

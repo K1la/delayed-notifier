@@ -2,10 +2,11 @@ package app
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/K1la/delayed-notifier/internal/models"
 	"github.com/K1la/delayed-notifier/internal/storage"
 	"github.com/wb-go/wbf/zlog"
-	"time"
 )
 
 type Worker struct {

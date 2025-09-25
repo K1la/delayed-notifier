@@ -21,7 +21,7 @@ services:
       - app-network
 
   db:
-    image: postgres:16-alpine
+    image: postgres
     container_name: postgres
     restart: always
     environment:
@@ -38,12 +38,13 @@ services:
       timeout: 5s
       retries: 5
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
+      - ./migrations/000001_create_notifications.up.sql:/docker-entrypoint-initdb.d/001_create_notifications.sql:ro
     networks:
       - app-network
 
   redis:
-    image: redis:latest
+    image: redis:7.2-alpine
     restart: always
     container_name: redis
     ports:

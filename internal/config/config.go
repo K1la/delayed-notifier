@@ -1,13 +1,14 @@
 package config
 
 import (
+	"os"
+
 	"github.com/joho/godotenv"
 	"github.com/wb-go/wbf/config"
 	"github.com/wb-go/wbf/zlog"
-	"os"
 )
 
-const path = "./env"
+const path = "./env/config.yaml"
 
 func Init() *Config {
 	wbCfg := config.New()
@@ -24,9 +25,8 @@ func Init() *Config {
 
 	zlog.Logger.Info().Msgf("config: %+v", cfg)
 
-	err = godotenv.Load(".env")
-	if err != nil {
-		zlog.Logger.Panic().Err(err).Msg("could not load .env file")
+	if err = godotenv.Load(".env"); err != nil {
+		zlog.Logger.Warn().Err(err).Msg(".env not found; relying on environment variables")
 	}
 
 	val, _ := os.LookupEnv("DB_PASSWORD")

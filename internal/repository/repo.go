@@ -2,6 +2,7 @@ package repository
 
 import (
 	"fmt"
+
 	"github.com/K1la/delayed-notifier/internal/config"
 	"github.com/wb-go/wbf/dbpg"
 	"github.com/wb-go/wbf/zlog"
@@ -16,7 +17,7 @@ func New(db *dbpg.DB) *Repository {
 }
 
 func NewDB(cfg *config.Config) *dbpg.DB {
-	dbString := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+	dbString := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		cfg.Postgres.Host,
 		cfg.Postgres.Port,
 		cfg.Postgres.User,

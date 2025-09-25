@@ -5,14 +5,14 @@ import (
 	"github.com/K1la/delayed-notifier/internal/models"
 )
 
-func (s *NotificationService) CreateNotification(ctx context.Context, n *models.Notification) error {
-	err := s.repo.CreateNotification(ctx, n)
+func (s *NotificationService) CreateNotification(ctx context.Context, n *models.Notification) (*models.Notification, error) {
+	notif, err := s.repo.CreateNotification(ctx, n)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	if err = s.cache.Set(n.ID, n.Status); err != nil {
-		return err
+	if err = s.cache.Set(notif.ID, notif.Status); err != nil {
+		return nil, err
 	}
-	return nil
+	return notif, nil
 }

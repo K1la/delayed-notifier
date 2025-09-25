@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"github.com/K1la/delayed-notifier/internal/models"
@@ -12,10 +13,24 @@ var (
 	ErrNoNotificationsFound = errors.New("no notifications found")
 )
 
-//func (r *Repository) GetNotificationStatusById(ctx context.Context, id uuid.UUID) (string, error) {
-//
-//	return notif, nil
-//}
+func (r *Repository) GetNotificationStatusById(ctx context.Context, id string) (string, error) {
+	query := `
+		SELECT status
+		FROM notifications
+		WHERE id = $1
+	`
+
+	var status string
+	err := r.db.Master.QueryRowContext(ctx, query, id).Scan(&status)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return "", ErrNotificationNotFound
+		}
+		return "", fmt.Errorf("failed to get notification status from db: %w", err)
+	}
+
+	return status, nil
+}
 
 func (r *Repository) GetNotifications(ctx context.Context) ([]models.Notification, error) {
 	query := `
@@ -34,7 +49,7 @@ func (r *Repository) GetNotifications(ctx context.Context) ([]models.Notificatio
 	for rows.Next() {
 		var n models.Notification
 		if err = rows.Scan(&n.ID, &n.Message, &n.SendAt, &n.Retries, &n.Channel, &n.Status); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to scan row to model: %w", err)
 		}
 
 		notifications = append(notifications, n)

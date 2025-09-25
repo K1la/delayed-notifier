@@ -29,7 +29,7 @@ func OK(w http.ResponseWriter, result interface{}) {
 }
 
 func NotFound(w http.ResponseWriter, err error) {
-	JSON(w, http.StatusNotFound, Error{Message: err.Error()})
+	JSON(w, http.StatusInternalServerError, Error{Message: err.Error()})
 }
 
 func Created(w http.ResponseWriter, result interface{}) {

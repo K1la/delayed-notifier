@@ -2,9 +2,11 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/K1la/delayed-notifier/internal/api/response"
 	"github.com/K1la/delayed-notifier/internal/models"
+	"github.com/K1la/delayed-notifier/internal/repository"
 	"github.com/K1la/delayed-notifier/internal/service"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -61,6 +63,12 @@ func (h *Handler) CreateNotification(c *ginext.Context) {
 	}
 	parsedTime := parsedUTC.In(loc)
 
+	if time.Until(parsedTime) <= 0 {
+		zlog.Logger.Error().Msg("invalid payload: time is in the past")
+		response.Fail(c.Writer, http.StatusBadRequest, fmt.Errorf("invalid payload: time shuold be in the future"))
+		return
+	}
+
 	notif := &models.Notification{
 		ID:        uuid.New().String(),
 		Message:   req.Message,
@@ -73,37 +81,50 @@ func (h *Handler) CreateNotification(c *ginext.Context) {
 		UpdatedAt: time.Now(),
 	}
 
-	err = h.service.CreateNotification(c.Request.Context(), notif)
+	notif, err = h.service.CreateNotification(c.Request.Context(), notif)
 	if err != nil {
 		zlog.Logger.Error().Err(err).Msg("failed to create notification")
+		response.Fail(c.Writer, http.StatusInternalServerError, err)
+		return
 	}
 
-	zlog.Logger.Info().Msgf("notif created: %+v", notif)
+	zlog.Logger.Info().Msgf("successfuly created notification: %+v", notif)
 	response.Created(c.Writer, notif)
 
 }
 
-//	func (h *Handler) GetNotificationStatusByID(c *gin.Context) {
-//		id := c.Param("id")
-//
-//		// TODO: заменить вместо in-memo на service
-//		n, err := h.storage.Get(id)
-//
-//		if err != nil {
-//			zlog.Logger.Error().Err(err).Msg("failed to find notifications")
-//			response.NotFound(c.Writer, err)
-//			return
-//		}
-//		response.OK(c.Writer, n)
-//	}
+func (h *Handler) GetNotificationStatusByID(c *gin.Context) {
+	zlog.Logger.Info().Msgf("req: %+v", c.Request.Body)
+
+	id := c.Param("id")
+
+	status, err := h.service.GetNotificationStatusByID(c.Request.Context(), id)
+	if err != nil {
+		zlog.Logger.Error().Err(err).Msg("failed to find notification status")
+		if errors.Is(err, repository.ErrNotificationNotFound) {
+			response.Fail(c.Writer, http.StatusBadRequest, err)
+		}
+		response.NotFound(c.Writer, err)
+		return
+	}
+
+	zlog.Logger.Info().Msgf("successfuly get status notification (id=%v) : %+v", id, status)
+	response.OK(c.Writer, status)
+}
 
 func (h *Handler) GetAllNotifications(c *gin.Context) {
 	list, err := h.service.GetNotifications(c.Request.Context())
 	if err != nil {
+		if errors.Is(err, repository.ErrNoNotificationsFound) {
+			zlog.Logger.Error().Err(err).Msg("failed to find all notifications")
+			response.NotFound(c.Writer, err)
+			return
+		}
 		zlog.Logger.Error().Err(err).Msg("failed to find notifications")
 		response.NotFound(c.Writer, err)
 		return
 	}
+
 	response.OK(c.Writer, list)
 }
 

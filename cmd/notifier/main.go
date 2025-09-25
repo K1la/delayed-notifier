@@ -31,7 +31,7 @@ func main() {
 	repo := repository.New(db)
 	ch := cache.New(cfg.Redis.Host, cfg.Redis.Port)
 	srvc := service.New(repo, ch)
-	// TODO: добавить слой сервиса и передавать его в handlers
+
 	handler := handlers.New(srvc, val)
 	r := router.New(handler)
 	s := server.New(cfg.HTTPServer.Address, r)

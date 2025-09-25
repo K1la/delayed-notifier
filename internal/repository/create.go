@@ -6,7 +6,7 @@ import (
 	"github.com/K1la/delayed-notifier/internal/models"
 )
 
-func (r *Repository) CreateNotification(ctx context.Context, notif *models.Notification) error {
+func (r *Repository) CreateNotification(ctx context.Context, notif *models.Notification) (*models.Notification, error) {
 	query := `
 	INSERT INTO notifications (
 		message, send_at, retries, "to", channel
@@ -23,8 +23,8 @@ func (r *Repository) CreateNotification(ctx context.Context, notif *models.Notif
 		notif.Channel,
 	).Scan(&notif.ID, &notif.CreatedAt)
 	if err != nil {
-		return fmt.Errorf("could not scan notification from db: %w", err)
+		return nil, fmt.Errorf("could not scan notification from db: %w", err)
 	}
 
-	return nil
+	return notif, nil
 }

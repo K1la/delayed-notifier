@@ -36,6 +36,6 @@ func Created(w http.ResponseWriter, result interface{}) {
 	JSON(w, http.StatusCreated, Success{Result: result})
 }
 
-func Fail(w http.ResponseWriter, status int, err error) {
-	JSON(w, status, Error{Message: err.Error()})
+func Fail(w http.ResponseWriter, err error) {
+	JSON(w, http.StatusBadRequest, Error{Message: err.Error()})
 }

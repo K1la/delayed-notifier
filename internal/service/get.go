@@ -20,7 +20,7 @@ func (s *NotificationService) GetNotificationStatusByID(ctx context.Context, id 
 	}
 
 	if errors.Is(err, redis.Nil) {
-		status, err = s.repo.GetNotificationStatusById(ctx, id)
+		status, err = s.repo.GetNotificationStatusByID(ctx, id)
 		if err != nil {
 			return "", err
 		}

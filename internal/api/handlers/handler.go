@@ -9,7 +9,6 @@ import (
 	"github.com/K1la/delayed-notifier/internal/api/response"
 	"github.com/K1la/delayed-notifier/internal/models"
 	"github.com/K1la/delayed-notifier/internal/repository"
-	"github.com/K1la/delayed-notifier/internal/service"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
@@ -18,11 +17,11 @@ import (
 )
 
 type Handler struct {
-	service *service.NotificationService
+	service ServiceI
 	valid   *validator.Validate
 }
 
-func New(s *service.NotificationService, v *validator.Validate) *Handler {
+func New(s ServiceI, v *validator.Validate) *Handler {
 	return &Handler{service: s, valid: v}
 }
 
@@ -37,7 +36,6 @@ type CreateRequest struct {
 func (h *Handler) CreateNotification(c *ginext.Context) {
 	zlog.Logger.Info().Msgf("req: %+v", c.Request.Body)
 	var notifReq CreateRequest
-	//if err := json.NewDecoder(c.Request.Body).Decode(&notifReq); err != nil {
 	if err := c.BindJSON(&notifReq); err != nil {
 		zlog.Logger.Error().Err(err).Msg("failed to decode request body")
 		response.Fail(c.Writer, http.StatusBadRequest, fmt.Errorf("decode error: %s", err.Error()))

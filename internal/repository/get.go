@@ -14,7 +14,7 @@ var (
 	ErrNoNotificationsFound = errors.New("no notifications found")
 )
 
-func (r *Repository) GetNotificationStatusById(ctx context.Context, id string) (string, error) {
+func (r *Repository) GetNotificationStatusByID(ctx context.Context, id string) (string, error) {
 	query := `
 		SELECT status
 		FROM notifications

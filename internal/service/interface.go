@@ -7,7 +7,7 @@ import (
 )
 
 type RepositoryI interface {
-	CreateNotification(*models.Notification) (*models.Notification, error)
+	CreateNotification(ctx context.Context, notif *models.Notification) (*models.Notification, error)
 	GetNotifications(ctx context.Context) ([]models.Notification, error)
 	GetNotificationStatusByID(ctx context.Context, id string) (string, error)
 	CancelNotification(ctx context.Context, id string, newStatus models.NotificationStatus) error

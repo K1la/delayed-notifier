@@ -28,13 +28,22 @@ func (s *NotificationService) PublishPendingNotification(ctx context.Context) er
 			}
 
 			for _, n := range notifications {
-				if (n.SendAt.UnixMilli() - time.Now().UnixMilli()) <= time.Minute.Milliseconds()/2 {
-					if err = s.queue.Publish(n); err != nil {
-						zlog.Logger.Error().Err(err).Msg("Failed to publish notification to queue")
-						continue
-					}
-					zlog.Logger.Info().Msgf("Queue publish notification %+v", n)
+				// Пропускаем уведомления с failed или canceled статусом
+				if n.Status == models.StatusFailed || n.Status == models.StatusCanceled {
+					zlog.Logger.Info().Msgf("Skipping notification %s with status %s", n.ID, n.Status)
+					continue
 				}
+
+				// Пропускаем уведомления, которые еще не готовы к отправке
+				if (n.SendAt.UnixMilli() - time.Now().UnixMilli()) > time.Minute.Milliseconds()/2 {
+					continue
+				}
+
+				if err = s.queue.Publish(n); err != nil {
+					zlog.Logger.Error().Err(err).Msg("Failed to publish notification to queue")
+					continue
+				}
+				zlog.Logger.Info().Msgf("Queue publish notification %+v", n)
 			}
 		}
 	}

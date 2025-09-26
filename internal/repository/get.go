@@ -52,11 +52,11 @@ func (r *Repository) GetNotifications(ctx context.Context) ([]models.Notificatio
 		err = rows.Scan(
 			&n.ID,
 			&n.Message,
-			&n.Channel,
-			&n.To,
 			&n.SendAt,
-			&n.Status,
 			&n.Retries,
+			&n.To,
+			&n.Channel,
+			&n.Status,
 			&n.CreatedAt,
 			&n.UpdatedAt,
 		)
@@ -76,7 +76,7 @@ func (r *Repository) GetNotifications(ctx context.Context) ([]models.Notificatio
 
 func (r *Repository) GetPendingNotifications(ctx context.Context) ([]models.Notification, error) {
 	query := `
-	SELECT *
+	SELECT id, message, send_at, retries, "to", channel, status, created_at, updated_at
 	FROM notifications
 	WHERE send_at < NOW()
 	AND status = 'pending'
@@ -94,11 +94,11 @@ func (r *Repository) GetPendingNotifications(ctx context.Context) ([]models.Noti
 		err = rows.Scan(
 			&n.ID,
 			&n.Message,
-			&n.Channel,
-			&n.To,
 			&n.SendAt,
-			&n.Status,
 			&n.Retries,
+			&n.To,
+			&n.Channel,
+			&n.Status,
 			&n.CreatedAt,
 			&n.UpdatedAt,
 		)

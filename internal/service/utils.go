@@ -15,6 +15,12 @@ func (s *NotificationService) handleMessage(ctx context.Context, message []byte,
 		return fmt.Errorf("failed to unmarshal notification from queue: %w", err)
 	}
 
+	// Пропускаем уведомления с failed или canceled статусом
+	if notification.Status == models.StatusFailed || notification.Status == models.StatusCanceled {
+		zlog.Logger.Info().Msgf("Skipping notification %s with status %s", notification.ID, notification.Status)
+		return nil
+	}
+
 	// Если To содержит username (начинается с @), используем его как есть
 	// Иначе пытаемся конвертировать в int
 	var telegramId int
@@ -49,7 +55,7 @@ func (s *NotificationService) handleMessage(ctx context.Context, message []byte,
 		return err
 	}
 
-	if err := s.cache.Set(notification.ID, models.StatusSent); err != nil {
+	if err := s.cache.Set(notification.ID, string(models.StatusSent)); err != nil {
 		return fmt.Errorf("failed to set in cache notification status to %s: %w", notification.ID, err)
 	}
 
@@ -69,7 +75,7 @@ func (s *NotificationService) handleFailedAttempt(ctx context.Context, notificat
 			return fmt.Errorf("failed to mark notification as failed: %w", err)
 		}
 
-		if err := s.cache.Set(notification.ID, models.StatusFailed); err != nil {
+		if err := s.cache.Set(notification.ID, string(models.StatusFailed)); err != nil {
 			return fmt.Errorf("failed to set failed status in cache: %w", err)
 		}
 

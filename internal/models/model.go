@@ -31,3 +31,14 @@ const (
 	StatusCanceled NotificationStatus = "canceled"
 	StatusFailed   NotificationStatus = "failed"
 )
+
+// MarshalBinary implements encoding.BinaryMarshaler for Redis
+func (ns NotificationStatus) MarshalBinary() ([]byte, error) {
+	return []byte(ns), nil
+}
+
+// UnmarshalBinary implements encoding.BinaryUnmarshaler for Redis
+func (ns *NotificationStatus) UnmarshalBinary(data []byte) error {
+	*ns = NotificationStatus(data)
+	return nil
+}

@@ -18,9 +18,8 @@ func New(handler *handlers.Handler) *ginext.Engine {
 	{
 		api.POST("/", handler.CreateNotification)
 		api.GET("/", handler.GetAllNotifications)
-		// TODO: доделать в ручках методы
 		api.GET("/:id", handler.GetNotificationStatusByID)
-		//api.DELETE(":id", handler.Delete)
+		api.DELETE(":id", handler.CancelNotification)
 	}
 
 	// Frontend: serve files from ./web without conflicting wildcard

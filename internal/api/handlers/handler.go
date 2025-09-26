@@ -135,14 +135,19 @@ func (h *Handler) GetAllNotifications(c *gin.Context) {
 	response.OK(c.Writer, list)
 }
 
-//func (h *Handler) Delete(c *gin.Context) {
-//	id := c.Param("id")
-//
-//	// TODO: заменить вместо in-memo на service
-//	err := h.storage.Delete(id)
-//	if err != nil {
-//		response.NotFound(c.Writer, err)
-//		return
-//	}
-//	response.OK(c.Writer, "canceled")
-//}
+func (h *Handler) CancelNotification(c *gin.Context) {
+	id := c.Param("id")
+
+	err := h.service.CancelNotification(c.Request.Context(), id)
+	if err != nil {
+		if errors.Is(err, repository.ErrNotificationNotFound) {
+			zlog.Logger.Error().Err(err).Msg("failed to cancel notification")
+			response.Fail(c.Writer, http.StatusBadRequest, err)
+			return
+		}
+		response.NotFound(c.Writer, err)
+		return
+	}
+	zlog.Logger.Info().Msgf("successfuly handled cancel notification with id:%v", id)
+	response.OK(c.Writer, "canceled")
+}

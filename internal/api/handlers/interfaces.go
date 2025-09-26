@@ -7,8 +7,8 @@ import (
 )
 
 type ServiceI interface {
-	CreateNotification(ctx context.Context, n *models.Notification) (*models.Notification, error)
-	GetNotifications(ctx context.Context) ([]models.Notification, error)
-	GetNotificationStatusByID(ctx context.Context, id string) (string, error)
-	CancelNotification(ctx context.Context, id string) error
+	CreateNotification(context.Context, *models.Notification) (*models.Notification, error)
+	GetNotifications(context.Context) ([]models.Notification, error)
+	GetNotificationStatusByID(context.Context, string) (string, error)
+	CancelNotification(context.Context, string) error
 }

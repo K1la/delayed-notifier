@@ -7,13 +7,24 @@ import (
 )
 
 type RepositoryI interface {
-	CreateNotification(ctx context.Context, notif *models.Notification) (*models.Notification, error)
-	GetNotifications(ctx context.Context) ([]models.Notification, error)
-	GetNotificationStatusByID(ctx context.Context, id string) (string, error)
-	CancelNotification(ctx context.Context, id string, newStatus models.NotificationStatus) error
+	CreateNotification(context.Context, *models.Notification) (*models.Notification, error)
+	GetNotifications(context.Context) ([]models.Notification, error)
+	GetNotificationStatusByID(context.Context, string) (string, error)
+	GetPendingNotifications(context.Context) ([]models.Notification, error)
+	CancelNotification(context.Context, string, models.NotificationStatus) error
+	UpdateRetries(context.Context, string, int) error
 }
 
 type CacheI interface {
 	Get(string) (string, error)
 	Set(string, interface{}) error
+}
+
+type QueueI interface {
+	Publish(models.Notification) error
+	Consume(context.Context) (<-chan []byte, error)
+}
+
+type SenderI interface {
+	SendToTelegram(telegramId int, message string) error
 }

@@ -1,5 +1,7 @@
 package config
 
+import "time"
+
 type Config struct {
 	Postgres   PostgresCfg   `mapstructure:"postgres"`
 	HTTPServer HTTPServerCfg `mapstructure:"http_server"`
@@ -28,6 +30,8 @@ type RedisCfg struct {
 }
 
 type RabbitMqCfg struct {
-	Host string `mapstructure:"host"`
-	Port string `mapstructure:"port"`
+	Host    string        `mapstructure:"host"`
+	Port    string        `mapstructure:"port"`
+	Retries int           `mapstructure:"retries"`
+	Pause   time.Duration `mapstructure:"pause"`
 }

@@ -2,6 +2,7 @@ package cache
 
 import (
 	"context"
+	"github.com/K1la/delayed-notifier/internal/config"
 	"os"
 	"time"
 
@@ -12,11 +13,11 @@ type Redis struct {
 	client *redis.Client
 }
 
-func New(host, port string) *Redis {
+func New(cfg config.RedisCfg) *Redis {
 	password := os.Getenv("REDIS_PASSWORD")
 
 	client := redis.New(
-		host+":"+port,
+		cfg.Host+":"+cfg.Port,
 		password,
 		0,
 	)

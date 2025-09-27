@@ -11,7 +11,7 @@ type RepositoryI interface {
 	GetNotifications(context.Context) ([]models.Notification, error)
 	GetNotificationStatusByID(context.Context, string) (string, error)
 	GetPendingNotifications(context.Context) ([]models.Notification, error)
-	CancelNotification(context.Context, string, models.NotificationStatus) error
+	UpdateNotification(context.Context, string, models.NotificationStatus) error
 	UpdateRetries(context.Context, string, int) error
 }
 

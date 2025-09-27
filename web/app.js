@@ -52,15 +52,45 @@ async function deleteNotif(id) {
 	await loadNotifications();
 }
 
+function getRFC3339FromOption(value) {
+	let d = new Date();
+	if (value.endsWith("m")) {
+		d.setMinutes(d.getMinutes() + parseInt(value));
+	} else if (value.endsWith("h")) {
+		d.setHours(d.getHours() + parseInt(value));
+	} else if (value.endsWith("d")) {
+		d.setDate(d.getDate() + parseInt(value));
+	}
+	return d.toISOString();
+}
+
 function attachFormHandler() {
 	const form = document.getElementById("create-form");
 	form.addEventListener("submit", async (e) => {
 		e.preventDefault();
+
+		let sendAt = "";
+		const manual = document.getElementById("sendat").value;
+		const preset = document.getElementById("preset").value;
+
+		if (manual) {
+			// пользователь выбрал дату/время
+			const d = new Date(manual);
+			sendAt = d.toISOString();
+		} else if (preset) {
+			// пользователь выбрал пресет
+			sendAt = getRFC3339FromOption(preset);
+		} else {
+			alert("Укажите время отправки или выберите вариант");
+			return;
+		}
+
 		const notif = {
 			message: document.getElementById("message").value,
 			channel: document.getElementById("channel").value,
 			to: document.getElementById("to").value,
-			send_at: document.getElementById("sendat").value,
+			send_at: sendAt,
+			// document.getElementById("sendat").value,
 			retries: parseInt(document.getElementById("retries").value)
 		};
 		await fetch(API_BASE + "/", {

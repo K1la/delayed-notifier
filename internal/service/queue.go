@@ -13,7 +13,7 @@ const (
 )
 
 func (s *NotificationService) PublishPendingNotification(ctx context.Context) error {
-	ticker := time.NewTicker(30 * time.Second) // Проверяем каждые 30 секунд
+	ticker := time.NewTicker(5 * time.Second) // Проверяем каждые 30 секунд
 	defer ticker.Stop()
 
 	for {
@@ -26,7 +26,6 @@ func (s *NotificationService) PublishPendingNotification(ctx context.Context) er
 				zlog.Logger.Error().Err(err).Msg("Failed to get pending notifications")
 				continue
 			}
-
 			for _, n := range notifications {
 				// Пропускаем уведомления с failed или canceled статусом
 				if n.Status == models.StatusFailed || n.Status == models.StatusCanceled {
@@ -43,7 +42,7 @@ func (s *NotificationService) PublishPendingNotification(ctx context.Context) er
 					zlog.Logger.Error().Err(err).Msg("Failed to publish notification to queue")
 					continue
 				}
-				zlog.Logger.Info().Msgf("Queue publish notification %+v", n)
+				zlog.Logger.Debug().Msgf("Queue publish notification %+v", n)
 			}
 		}
 	}

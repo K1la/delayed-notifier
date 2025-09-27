@@ -25,17 +25,32 @@
                 <div class="field">
                     <label class="label" for="channel">Канал</label>
                     <select id="channel">
-                        <option value="email">Email</option>
                         <option value="telegram">Telegram</option>
+                        <option value="email">Email</option>
                     </select>
                 </div>
                 <div class="field">
                     <label class="label" for="to">Кому</label>
-                    <input type="text" id="to" required placeholder="user@example.com или @username" />
+                    <input type="text" id="to" required placeholder="user@example.com или telegram chatID" />
                 </div>
                 <div class="field">
-                    <label class="label" for="sendat">Время (RFC3339)</label>
-                    <input type="text" id="sendat" required placeholder="2025-09-22T15:15:00+03:00" />
+<!--                    <label class="label" for="sendat">Время (RFC3339)</label>-->
+<!--                    <input type="text" id="sendat" required placeholder="2025-09-22T15:15:00+03:00" />-->
+
+                    <label class="label" for="sendat">Когда отправить</label>
+
+                    <!-- Календарь/время -->
+                    <input type="datetime-local" id="sendat" />
+
+                    <!-- Быстрый выбор -->
+                    <select id="preset">
+                        <option value="">или выберите...</option>
+                        <option value="30s">Через 30 секунд</option>
+                        <option value="1m">Через 1 минуту</option>
+                        <option value="5m">Через 5 минут</option>
+                        <option value="1h">Через 1 час</option>
+                        <option value="1d">Завтра</option>
+                    </select>
                 </div>
                 <div class="field">
                     <label class="label" for="retries">Retries</label>

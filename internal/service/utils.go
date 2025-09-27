@@ -16,7 +16,7 @@ func (s *NotificationService) handleMessage(ctx context.Context, message []byte,
 	}
 
 	// Пропускаем уведомления с failed или canceled статусом
-	if notification.Status == models.StatusFailed || notification.Status == models.StatusCanceled {
+	if notification.Status == models.StatusFailed || notification.Status == models.StatusCanceled || notification.Status == models.StatusSent {
 		zlog.Logger.Info().Msgf("Skipping notification %s with status %s", notification.ID, notification.Status)
 		return nil
 	}
@@ -51,7 +51,7 @@ func (s *NotificationService) handleMessage(ctx context.Context, message []byte,
 	}
 
 	// Успешная отправка
-	if err := s.repo.CancelNotification(ctx, notification.ID, models.StatusSent); err != nil {
+	if err := s.repo.UpdateNotification(ctx, notification.ID, models.StatusSent); err != nil {
 		return err
 	}
 
@@ -71,7 +71,7 @@ func (s *NotificationService) handleFailedAttempt(ctx context.Context, notificat
 	if newRetries >= 3 {
 		zlog.Logger.Error().Msgf("Notification %s failed after %d attempts, marking as failed", notification.ID, newRetries)
 
-		if err := s.repo.CancelNotification(ctx, notification.ID, models.StatusFailed); err != nil {
+		if err := s.repo.UpdateNotification(ctx, notification.ID, models.StatusFailed); err != nil {
 			return fmt.Errorf("failed to mark notification as failed: %w", err)
 		}
 

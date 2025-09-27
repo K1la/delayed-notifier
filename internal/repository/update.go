@@ -7,7 +7,7 @@ import (
 	"github.com/K1la/delayed-notifier/internal/models"
 )
 
-func (r *Repository) CancelNotification(ctx context.Context, id string, newStatus models.NotificationStatus) error {
+func (r *Repository) UpdateNotification(ctx context.Context, id string, newStatus models.NotificationStatus) error {
 	query := `
 	UPDATE notifications
 	SET status = $1, updated_at = NOW()

@@ -32,11 +32,11 @@ func (h *Handler) CreateNotification(c *ginext.Context) {
 
 	zlog.Logger.Info().Msgf("after valid struct notifReq: %+v", notifReq)
 
-	if time.Until(notifReq.SendAt) <= 0 {
-		zlog.Logger.Error().Msg("invalid payload: time is in the past")
-		response.Fail(c.Writer, fmt.Errorf("invalid payload: time shuold be in the future"))
-		return
-	}
+	//if time.Until(notifReq.SendAt) <= 0 {
+	//	zlog.Logger.Error().Msg("invalid payload: time is in the past")
+	//	response.Fail(c.Writer, fmt.Errorf("invalid payload: time shuold be in the future"))
+	//	return
+	//}
 
 	notif := &models.Notification{
 		ID:        uuid.New().String(),
@@ -100,7 +100,7 @@ func (h *Handler) GetAllNotifications(c *gin.Context) {
 func (h *Handler) CancelNotification(c *gin.Context) {
 	id := c.Param("id")
 
-	err := h.service.CancelNotification(c.Request.Context(), id)
+	err := h.service.UpdateNotification(c.Request.Context(), id)
 	if err != nil {
 		if errors.Is(err, repository.ErrNotificationNotFound) {
 			zlog.Logger.Error().Err(err).Msg("failed to cancel notification")
